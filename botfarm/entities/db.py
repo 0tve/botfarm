@@ -1,9 +1,10 @@
-import pathlib
-from botfarm.components import utils
 import enum
-from botfarm.entities import constants
+import pathlib
 
 import pydantic
+
+from botfarm.components import utils
+from botfarm.entities import constants
 
 
 class DBCredentialsEnvFields(enum.Enum):

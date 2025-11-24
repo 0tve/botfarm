@@ -1,7 +1,8 @@
-from botfarm.entities import db
-from botfarm.entities import constants
-import pytest
 import pathlib
+
+import pytest
+
+from botfarm.entities import constants, db
 from test_botfarm import conftest
 
 

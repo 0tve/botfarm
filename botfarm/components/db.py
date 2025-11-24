@@ -1,10 +1,10 @@
-from botfarm.entities import db
+from collections import abc
+
 import asyncpg
-from sqlalchemy.ext import asyncio as sa_asyncio
 import sqlalchemy
-from botfarm.entities import db
-from botfarm.entities import exceptions
-from botfarm.entities import models
+from sqlalchemy.ext import asyncio as sa_asyncio
+
+from botfarm.entities import db, exceptions, models
 
 async_default_engine = sa_asyncio.create_async_engine(
     db.db_default_credentials.url)
@@ -16,6 +16,7 @@ async_sessionmaker = sa_asyncio.async_sessionmaker(async_engine)
 
 
 async def is_db_exists(sessionmaker: sa_asyncio.async_sessionmaker) -> bool:
+    """Проверяет доступность базы"""
     try:
         async with sessionmaker() as session:
             session: sa_asyncio.AsyncSession
@@ -26,6 +27,7 @@ async def is_db_exists(sessionmaker: sa_asyncio.async_sessionmaker) -> bool:
 
 
 async def ensure_db_exists() -> None:
+    """Убеждается, что БД создана и при необходимости создаёт ее через дефолтное подключение"""
     default_db_exists = await is_db_exists(async_default_sessionmaker)
     db_exists = await is_db_exists(async_sessionmaker)
     if not default_db_exists and not db_exists:
@@ -39,5 +41,12 @@ async def ensure_db_exists() -> None:
 
 
 async def create_tables():
+    """Создает таблицы по моделям"""
     async with async_engine.begin() as conn:
         await conn.run_sync(models.Base.metadata.create_all)
+
+
+async def get_session() -> abc.AsyncIterator[sa_asyncio.AsyncSession]:
+    """Выдает сессию, используется как Dependency Injection"""
+    async with async_sessionmaker() as session:
+        yield session

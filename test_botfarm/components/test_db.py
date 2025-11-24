@@ -1,9 +1,7 @@
-import types
-import pytest
-from botfarm.entities import db as db_entities
-from botfarm.components import db
 import asyncpg
-from sqlalchemy.ext import asyncio as sa_asyncio
+import pytest
+
+from botfarm.components import db
 from botfarm.entities import exceptions
 
 

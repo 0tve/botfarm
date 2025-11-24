@@ -1,8 +1,9 @@
-import pathlib
 import hashlib
+import pathlib
 
 
 def load_env(path: pathlib.Path) -> dict[str, str]:
+    """Загружает пары ключ-значение из .env файла, игнорируя пустые строки и комментарии"""
     if not path.exists():
         raise FileNotFoundError(f"Файл не найден: {path}")
 
@@ -20,4 +21,5 @@ def load_env(path: pathlib.Path) -> dict[str, str]:
 
 
 def hash_password(password: str) -> str:
+    """Возвращает SHA-256 хеш переданного пароля в шестнадцатеричном виде"""
     return hashlib.sha256(password.encode()).hexdigest()

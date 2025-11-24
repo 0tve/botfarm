@@ -2,9 +2,9 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
-from botfarm.components import db
+
 from botfarm import api
-from botfarm.components import exceptions
+from botfarm.components import db, exceptions
 from botfarm.entities import exceptions as exception_entities
 
 

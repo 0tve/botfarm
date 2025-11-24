@@ -1,11 +1,10 @@
 import enum
-from datetime import datetime
-from datetime import timezone
 import uuid
+from datetime import datetime, timezone
 
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy import orm
+from sqlalchemy.dialects import postgresql as pg
 
 
 class Base(orm.DeclarativeBase):

@@ -1,8 +1,7 @@
 import pytest
 
 from botfarm.components import utils
-from botfarm.entities import constants
-from botfarm.entities import db
+from botfarm.entities import constants, db
 
 
 @pytest.mark.parametrize(
