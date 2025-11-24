@@ -61,11 +61,11 @@ async def create_project(
 
 
 @router.get('/projects')
-async def list_projects(
+async def get_projects(
     limit: int = fastapi.Query(default=100, ge=1),
     session: sa_asyncio.AsyncSession = fastapi.Depends(db.get_session),
 ) -> list[schemas.Project]:
-    return await projects.list_projects(limit, session=session)
+    return await projects.get_projects(limit, session=session)
 
 
 @router.get('/projects/{name}')

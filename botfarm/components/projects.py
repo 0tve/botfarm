@@ -31,7 +31,7 @@ async def create_project(request: schemas.ProjectCreate, session: sa_asyncio.Asy
     return schemas.Project.model_validate(project)
 
 
-async def list_projects(limit: int, session: sa_asyncio.AsyncSession) -> list[schemas.Project]:
+async def get_projects(limit: int, session: sa_asyncio.AsyncSession) -> list[schemas.Project]:
     """Возвращает список проектов"""
     result = await session.scalars(sa.select(models.Project).limit(limit))
     projects = result.all()

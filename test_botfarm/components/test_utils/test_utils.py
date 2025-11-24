@@ -28,3 +28,20 @@ def test_load_env(file_name, expected_env, expected_exception, get_file_path):
             utils.load_env(env_path)
     else:
         assert utils.load_env(env_path) == expected_env
+
+
+@pytest.mark.parametrize(
+    'password, expected_hash',
+    [
+        pytest.param(
+            'password',
+            '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
+        ),
+        pytest.param(
+            'abc123',
+            '6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090',
+        ),
+    ],
+)
+def test_hash_password(password, expected_hash):
+    assert utils.hash_password(password) == expected_hash
