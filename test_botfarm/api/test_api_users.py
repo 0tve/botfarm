@@ -7,10 +7,11 @@ import pytest
 from botfarm import api
 from botfarm.components import projects, utils
 from botfarm.entities import exceptions, models, schemas
+from test_botfarm.conftest import MockScalarResult
 
 
-class FakeSession:
-    '''Моковая сессия, которая считает вызовы add/commit/refresh'''
+class MockSession:
+    """Моковая сессия, которая считает вызовы add/commit/refresh"""
 
     def __init__(self):
         self.add_count = 0
@@ -33,14 +34,6 @@ class FakeSession:
 
     async def refresh(self, obj):
         self.refresh_count += 1
-
-
-class FakeScalarResult:
-    def __init__(self, items):
-        self._items = items
-
-    def all(self):
-        return self._items
 
 
 @pytest.mark.asyncio
@@ -72,31 +65,31 @@ class FakeScalarResult:
     ],
 )
 async def test_create_user(payload, expected_project_id, expected_project_calls, monkeypatch):
-    fake_session = FakeSession()
+    mock_session = MockSession()
     calls = {'projects': 0}
 
-    async def fake_get_project(name, session):
+    async def mock_get_project(name, session):
         calls['projects'] += 1
         assert name == payload['project_name']
-        assert session is fake_session
+        assert session is mock_session
         return types.SimpleNamespace(id=expected_project_id)
 
-    monkeypatch.setattr(projects, 'get_project', fake_get_project)
+    monkeypatch.setattr(projects, 'get_project', mock_get_project)
 
     request = schemas.UserCreate(**payload)
-    result = await api.create_user(request=request, session=fake_session)
+    result = await api.create_user(request=request, session=mock_session)
 
     assert calls['projects'] == expected_project_calls
-    assert fake_session.add_count == 1
-    assert fake_session.commit_count == 1
-    assert fake_session.refresh_count == 1
+    assert mock_session.add_count == 1
+    assert mock_session.commit_count == 1
+    assert mock_session.refresh_count == 1
 
     assert result.login == request.login
     assert result.project_id == expected_project_id
     assert result.env == request.env
     assert result.domain == request.domain
     assert result.locktime is None
-    assert fake_session.last_added.password == utils.hash_password(request.password)
+    assert mock_session.last_added.password == utils.hash_password(request.password)
 
 
 @pytest.mark.asyncio
@@ -107,8 +100,8 @@ async def test_create_user(payload, expected_project_id, expected_project_calls,
         pytest.param('project', types.SimpleNamespace(id=uuid.uuid4()), 1),
     ],
 )
-async def test_get_users(project_name, project_obj, expected_scalar_calls):
-    class FakeSessionForGetUsers:
+async def test_get_users(project_name, project_obj, expected_scalar_calls, limit_two):
+    class MockSessionForGetUsers:
         def __init__(self):
             self.scalar_calls = []
             self.scalars_calls = []
@@ -119,11 +112,11 @@ async def test_get_users(project_name, project_obj, expected_scalar_calls):
 
         async def scalars(self, stmt):
             self.scalars_calls.append(stmt)
-            return FakeScalarResult(fake_users)
+            return MockScalarResult(mock_users)
 
-    fake_session = FakeSessionForGetUsers()
+    mock_session = MockSessionForGetUsers()
 
-    fake_users = [
+    mock_users = [
         types.SimpleNamespace(
             id=uuid.uuid4(),
             created_at=datetime.now(timezone.utc),
@@ -144,23 +137,22 @@ async def test_get_users(project_name, project_obj, expected_scalar_calls):
         ),
     ]
 
-    limit_value = 2
     result = await api.get_users(
-        limit=limit_value,
+        limit=limit_two,
         project_name=project_name,
         domain=models.DomainType.regular,
         env=models.EnvType.prod,
-        session=fake_session,
+        session=mock_session,
     )
 
-    assert len(fake_session.scalar_calls) == expected_scalar_calls
-    assert len(fake_session.scalars_calls) == 1
-    stmt = fake_session.scalars_calls[0]
+    assert len(mock_session.scalar_calls) == expected_scalar_calls
+    assert len(mock_session.scalars_calls) == 1
+    stmt = mock_session.scalars_calls[0]
     assert 'LIMIT' in str(stmt)
     compiled_params = stmt.compile().params
-    assert limit_value in compiled_params.values()
+    assert limit_two in compiled_params.values()
 
-    assert len(result) == len(fake_users)
+    assert len(result) == len(mock_users)
     assert all(isinstance(item, schemas.User) for item in result)
     assert all(item.domain == models.DomainType.regular for item in result)
     assert all(item.env == models.EnvType.prod for item in result)
@@ -176,7 +168,7 @@ async def test_get_users(project_name, project_obj, expected_scalar_calls):
     ],
 )
 async def test_get_user(lock_flag, initial_locktime, expect_commit, expect_refresh, expect_exception):
-    class FakeSession:
+    class MockSession:
         def __init__(self):
             self.scalar_calls = 0
             self.commit_count = 0
@@ -201,18 +193,18 @@ async def test_get_user(lock_flag, initial_locktime, expect_commit, expect_refre
         async def refresh(self, obj):
             self.refresh_count += 1
 
-    fake_session = FakeSession()
+    mock_session = MockSession()
 
     if expect_exception:
         with pytest.raises(expect_exception):
-            await api.get_user(login='user@example.com', lock=lock_flag, session=fake_session)
+            await api.get_user(login='user@example.com', lock=lock_flag, session=mock_session)
         return
 
-    result = await api.get_user(login='user@example.com', lock=lock_flag, session=fake_session)
+    result = await api.get_user(login='user@example.com', lock=lock_flag, session=mock_session)
 
-    assert fake_session.scalar_calls == 1
-    assert fake_session.commit_count == expect_commit
-    assert fake_session.refresh_count == expect_refresh
+    assert mock_session.scalar_calls == 1
+    assert mock_session.commit_count == expect_commit
+    assert mock_session.refresh_count == expect_refresh
     assert result.login == 'user@example.com'
     assert result.project_id is None
     assert result.env == models.EnvType.prod
@@ -254,7 +246,7 @@ async def test_get_user(lock_flag, initial_locktime, expect_commit, expect_refre
 async def test_update_user(payload, project_obj, expected_project_calls, monkeypatch):
     calls = {'scalar': 0, 'project': 0, 'commit': 0, 'refresh': 0}
 
-    class FakeSession:
+    class MockSession:
         def __init__(self):
             self.user = types.SimpleNamespace(
                 id=uuid.uuid4(),
@@ -285,19 +277,19 @@ async def test_update_user(payload, project_obj, expected_project_calls, monkeyp
         async def refresh(self, _):
             calls['refresh'] += 1
 
-    async def fake_get_project(name, session):
+    async def mock_get_project(name, session):
         calls['project'] += 1
-        assert session is fake_session
+        assert session is mock_session
         assert name == payload['project_name']
         return project_obj
 
-    fake_session = FakeSession()
+    mock_session = MockSession()
 
     if payload['project_name'] is not None:
-        monkeypatch.setattr(projects, 'get_project', fake_get_project)
+        monkeypatch.setattr(projects, 'get_project', mock_get_project)
 
     request = schemas.UserUpdate(**payload)
-    result = await api.update_user(login='user@example.com', request=request, session=fake_session)
+    result = await api.update_user(login='user@example.com', request=request, session=mock_session)
 
     assert calls['commit'] == 1
     assert calls['refresh'] == 1
@@ -315,7 +307,7 @@ async def test_update_user(payload, project_obj, expected_project_calls, monkeyp
 async def test_delete_user():
     calls = {'scalar': 0, 'delete': 0, 'commit': 0}
 
-    class FakeSession:
+    class MockSession:
         def __init__(self):
             self.user = types.SimpleNamespace(id=uuid.uuid4())
 
@@ -330,12 +322,11 @@ async def test_delete_user():
         async def commit(self):
             calls['commit'] += 1
 
-    fake_session = FakeSession()
+    mock_session = MockSession()
 
-    result = await api.delete_user(login='user@example.com', session=fake_session)
+    result = await api.delete_user(login='user@example.com', session=mock_session)
 
     assert result is None
     assert calls['scalar'] == 1
     assert calls['delete'] == 1
     assert calls['commit'] == 1
-
