@@ -41,7 +41,8 @@ async def test_create_project():
     result = await api.create_project(request=request, session=mock_session)
 
     assert result.name == 'proj'
-    assert calls == {'add': 1, 'commit': 1, 'refresh': 1, 'fetch': 1, 'flush': 1}
+    assert calls == {'add': 1, 'commit': 1,
+                     'refresh': 1, 'fetch': 1, 'flush': 1}
 
 
 @pytest.mark.asyncio

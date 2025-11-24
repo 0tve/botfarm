@@ -89,7 +89,8 @@ async def test_create_user(payload, expected_project_id, expected_project_calls,
     assert result.env == request.env
     assert result.domain == request.domain
     assert result.locktime is None
-    assert mock_session.last_added.password == utils.hash_password(request.password)
+    assert mock_session.last_added.password == utils.hash_password(
+        request.password)
 
 
 @pytest.mark.asyncio
@@ -164,7 +165,8 @@ async def test_get_users(project_name, project_obj, expected_scalar_calls, limit
     [
         pytest.param(False, None, 0, 0, None),
         pytest.param(True, None, 1, 1, None),
-        pytest.param(False, datetime.now(timezone.utc), 0, 0, exceptions.BotfarmUserLockedError),
+        pytest.param(False, datetime.now(timezone.utc), 0,
+                     0, exceptions.BotfarmUserLockedError),
     ],
 )
 async def test_get_user(lock_flag, initial_locktime, expect_commit, expect_refresh, expect_exception):
