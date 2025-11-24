@@ -16,6 +16,7 @@ class Project(pydantic.BaseModel):
 
     model_config = pydantic.ConfigDict(from_attributes=True)
 
+
 class ProjectUpdate(pydantic.BaseModel):
     name: str | None = None
 
@@ -26,6 +27,7 @@ class UserCreate(pydantic.BaseModel):
     project_name: str | None = None
     env: models.EnvType
     domain: models.DomainType
+
 
 class UserUpdate(pydantic.BaseModel):
     password: str | None = None

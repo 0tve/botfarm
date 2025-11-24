@@ -1,6 +1,7 @@
 import pathlib
 import hashlib
 
+
 def load_env(path: pathlib.Path) -> dict[str, str]:
     if not path.exists():
         raise FileNotFoundError(f"Файл не найден: {path}")
@@ -16,6 +17,7 @@ def load_env(path: pathlib.Path) -> dict[str, str]:
         env[key] = value
 
     return env
+
 
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()

@@ -56,7 +56,8 @@ class DummyEngine:
     'dummy_sessionmaker, exists',
     [
         pytest.param(lambda: DummySessionmaker(), True),
-        pytest.param(lambda: DummySessionmaker(execute_raises=asyncpg.InvalidCatalogNameError()), False),
+        pytest.param(lambda: DummySessionmaker(
+            execute_raises=asyncpg.InvalidCatalogNameError()), False),
     ]
 )
 async def test_is_db_exists(dummy_sessionmaker, exists):

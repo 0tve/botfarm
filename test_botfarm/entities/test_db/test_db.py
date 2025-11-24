@@ -4,6 +4,7 @@ import pytest
 import pathlib
 from test_botfarm import conftest
 
+
 @pytest.mark.parametrize(
     'file_name, expected_exception, expected_credentials',
     [
@@ -25,7 +26,8 @@ def test_from_env_file(file_name, expected_exception, expected_credentials, get_
     env_file = get_file_path(file_name)
     if expected_exception:
         with pytest.raises(expected_exception):
-            db.DBCredentials.from_env_file(pathlib.Path(env_file), db.DBCredentialsEnvFields)
+            db.DBCredentials.from_env_file(
+                pathlib.Path(env_file), db.DBCredentialsEnvFields)
     else:
-        assert db.DBCredentials.from_env_file(pathlib.Path(env_file), db.DBCredentialsEnvFields) == db.DBCredentials(**expected_credentials)
-        
+        assert db.DBCredentials.from_env_file(pathlib.Path(
+            env_file), db.DBCredentialsEnvFields) == db.DBCredentials(**expected_credentials)

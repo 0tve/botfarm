@@ -44,8 +44,10 @@ class User(Base):
     created_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime(timezone=True), default=datetime.now(timezone.utc), nullable=False,
     )
-    login: orm.Mapped[str] = orm.mapped_column(sa.String(255), nullable=False, unique=True)
-    password: orm.Mapped[str] = orm.mapped_column(sa.String(255), nullable=False)
+    login: orm.Mapped[str] = orm.mapped_column(
+        sa.String(255), nullable=False, unique=True)
+    password: orm.Mapped[str] = orm.mapped_column(
+        sa.String(255), nullable=False)
     project_id: orm.Mapped[uuid.UUID | None] = orm.mapped_column(
         pg.UUID(as_uuid=True), sa.ForeignKey('projects.id', ondelete='SET NULL'), nullable=True
     )
@@ -72,4 +74,5 @@ class Project(Base):
     id: orm.Mapped[uuid.UUID] = orm.mapped_column(
         pg.UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    name: orm.Mapped[str] = orm.mapped_column(sa.String(255), nullable=False, unique=True)
+    name: orm.Mapped[str] = orm.mapped_column(
+        sa.String(255), nullable=False, unique=True)

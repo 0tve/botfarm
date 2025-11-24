@@ -16,6 +16,7 @@ async def _fetch_user(session: sa_asyncio.AsyncSession, login: str) -> models.Us
         sa.select(models.User).where(models.User.login == login)
     )
 
+
 async def create_user(request: schemas.UserCreate) -> schemas.User:
     async with db.async_sessionmaker() as session:
         project_id = None
@@ -34,6 +35,7 @@ async def create_user(request: schemas.UserCreate) -> schemas.User:
         await session.refresh(user)
         return schemas.User.model_validate(user)
 
+
 async def get_users(
     limit: int,
     project_name: str | None = None,
@@ -44,7 +46,8 @@ async def get_users(
         statement = sa.select(models.User)
         if project_name is not None:
             project = await session.scalar(
-                sa.select(models.Project).where(models.Project.name == project_name)
+                sa.select(models.Project).where(
+                    models.Project.name == project_name)
             )
             if project is None:
                 raise exceptions.BotfarmProjectNotExistsError
@@ -57,6 +60,7 @@ async def get_users(
         users = result.all()
         return [schemas.User.model_validate(user) for user in users]
 
+
 async def get_user(login: str, lock: bool = False) -> schemas.User:
     if lock:
         return await acquire_lock(login)
@@ -67,6 +71,7 @@ async def get_user(login: str, lock: bool = False) -> schemas.User:
         if user.locktime is not None:
             raise exceptions.BotfarmUserLockedError
         return schemas.User.model_validate(user)
+
 
 async def acquire_lock(login: str) -> schemas.User:
     async with db.async_sessionmaker() as session:
@@ -80,6 +85,7 @@ async def acquire_lock(login: str) -> schemas.User:
         await session.refresh(user)
         return schemas.User.model_validate(user)
 
+
 async def release_lock(login: str) -> schemas.User:
     async with db.async_sessionmaker() as session:
         user = await _fetch_user(session, login)
@@ -89,6 +95,7 @@ async def release_lock(login: str) -> schemas.User:
         await session.commit()
         await session.refresh(user)
         return schemas.User.model_validate(user)
+
 
 async def update_user(login: str, request: schemas.UserUpdate) -> schemas.User:
     async with db.async_sessionmaker() as session:
@@ -101,7 +108,8 @@ async def update_user(login: str, request: schemas.UserUpdate) -> schemas.User:
                 user.project_id = None
             else:
                 project = await session.scalar(
-                    sa.select(models.Project).where(models.Project.name == request.project_name)
+                    sa.select(models.Project).where(
+                        models.Project.name == request.project_name)
                 )
                 if project is None:
                     raise exceptions.BotfarmProjectNotExistsError
@@ -118,6 +126,7 @@ async def update_user(login: str, request: schemas.UserUpdate) -> schemas.User:
         await session.commit()
         await session.refresh(user)
         return schemas.User.model_validate(user)
+
 
 async def delete_user(login: str) -> None:
     async with db.async_sessionmaker() as session:

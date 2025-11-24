@@ -5,23 +5,25 @@ from botfarm.entities import constants
 
 import pydantic
 
+
 class DBCredentialsEnvFields(enum.Enum):
-    user='DB_USER'
-    password='DB_PASSWORD'
-    host='DB_HOST'
-    port='DB_PORT'
-    name_='DB_NAME'
+    user = 'DB_USER'
+    password = 'DB_PASSWORD'
+    host = 'DB_HOST'
+    port = 'DB_PORT'
+    name_ = 'DB_NAME'
 
     @classmethod
     def get_name_field(cls) -> str:
         return cls.name_.name[:-1]
 
+
 class DBDefaultCredentialsEnvFields(enum.Enum):
-    user='DB_DEFAULT_USER'
-    password='DB_DEFAULT_PASSWORD'
-    host='DB_DEFAULT_HOST'
-    port='DB_DEFAULT_PORT'
-    name_='DB_DEFAULT_NAME'
+    user = 'DB_DEFAULT_USER'
+    password = 'DB_DEFAULT_PASSWORD'
+    host = 'DB_DEFAULT_HOST'
+    port = 'DB_DEFAULT_PORT'
+    name_ = 'DB_DEFAULT_NAME'
 
     @classmethod
     def get_name_field(cls) -> str:
@@ -54,5 +56,8 @@ class DBCredentials(pydantic.BaseModel):
             missing = exc.args[0]
             raise KeyError(f'Отсутствует ключ {missing} в {env_path}')
 
-db_default_credentials = DBCredentials.from_env_file(pathlib.Path(constants.SETTINGS_FILE), DBDefaultCredentialsEnvFields)
-db_credentials = DBCredentials.from_env_file(pathlib.Path(constants.SETTINGS_FILE), DBCredentialsEnvFields)
+
+db_default_credentials = DBCredentials.from_env_file(
+    pathlib.Path(constants.SETTINGS_FILE), DBDefaultCredentialsEnvFields)
+db_credentials = DBCredentials.from_env_file(
+    pathlib.Path(constants.SETTINGS_FILE), DBCredentialsEnvFields)

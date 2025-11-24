@@ -8,6 +8,7 @@ DB_HOST = 'host'
 DB_PORT = '1'
 DB_NAME = 'name'
 
+
 @pytest.fixture
 def get_file_path(request: pytest.FixtureRequest) -> pathlib.Path:
     base_dir = pathlib.Path(request.node.fspath).parent
