@@ -22,7 +22,7 @@ class ProjectUpdate(pydantic.BaseModel):
 
 
 class UserCreate(pydantic.BaseModel):
-    login: str
+    login: pydantic.EmailStr
     password: str
     project_name: str | None = None
     env: models.EnvType
@@ -40,7 +40,7 @@ class UserUpdate(pydantic.BaseModel):
 class User(pydantic.BaseModel):
     id: UUID
     created_at: datetime
-    login: str
+    login: pydantic.EmailStr
     project_id: UUID | None
     env: models.EnvType
     domain: models.DomainType
